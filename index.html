@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exercício Final — Clima</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Raleway:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky: #1a6fb5;
+    --sky-light: #5baee8;
+    --sky-pale: #ddf0ff;
+    --cloud: #f0f8ff;
+    --sun: #f5a623;
+    --green: #27ae60;
+    --red: #e74c3c;
+    --gray: #7f8c8d;
+    --dark: #1a2a3a;
+    --card-bg: #ffffff;
+    --border: #c8e0f5;
+    --slide-bg: #2c3e50; /* Cor de fundo para os slides */
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(160deg, #e8f4ff 0%, #d0ebff 50%, #b8dff5 100%);
+    min-height: 100vh;
+    color: var(--dark);
+  }
+
+  /* ---- HEADER ---- */
+  header {
+    background: linear-gradient(135deg, #1a6fb5, #0d4f8a);
+    color: white;
+    padding: 24px 32px 20px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: 0 4px 20px rgba(26,111,181,0.4);
+    position: relative;
+    overflow: hidden;
+  }
+  header::after {
+    content: '☁️ 🌤️ ⛅';
+    position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
+    font-size: 2rem; opacity: 0.3;
+    letter-spacing: 10px;
+  }
+  header .icon { font-size: 2.8rem; }
+  header h1 { font-family: 'Raleway', sans-serif; font-size: 1.7rem; font-weight: 900; }
+  header p { font-size: 0.9rem; opacity: 0.85; margin-top: 2px; }
+  .timer-bar {
+    margin-left: auto;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.4);
+    border-radius: 12px;
+    padding: 8px 20px;
+    text-align: center;
+    min-width: 110px;
+  }
+  .timer-bar .t-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
+  .timer-bar .t-count { font-size: 1.8rem; font-weight: 900; font-family: 'Raleway', sans-serif; }
+
+  /* ---- NOVAS SEÇÕES: SLIDES E VÍDEO ---- */
+  .module-section {
+    max-width: 860px;
+    margin: 24px auto;
+    padding: 0 20px;
+  }
+
+  .slide-container {
+    background: var(--card-bg);
+    border-radius: 20px;
+    border: 2px solid var(--border);
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 6px 30px rgba(26,111,181,0.12);
+  }
+
+  .slide-viewer {
+    background-color: var(--slide-bg);
+    background-image: radial-gradient(circle, #34495e, #2c3e50);
+    border-radius: 12px;
+    height: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 4px solid #222;
+    margin-bottom: 15px;
+  }
+
+  .slide-viewer img {
+    max-width: 100%;
+    max-height: 100%;
+    display: none;
+    object-fit: contain;
+  }
+
+  .slide-viewer img.active {
+    display: block;
+  }
+
+  video {
+    width: 100%;
+    border-radius: 15px;
+    box-shadow: 0 6px 30px rgba(0,0,0,0.2);
+    background: #000;
+  }
+
+  .btn-nav {
+    padding: 10px 25px;
+    background: var(--sky);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .btn-nav:hover { background: var(--sky-light); }
+  .btn-nav:disabled { background: #ccc; cursor: not-allowed; }
+
+  /* ---- PROGRESS TRACK ---- */
+  .progress-track {
+    background: var(--sky);
+    padding: 10px 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .progress-steps {
+    display: flex; gap: 6px; flex: 1;
+  }
+  .step-dot {
+    flex: 1; height: 8px; border-radius: 4px;
+    background: rgba(255,255,255,0.3);
+    transition: background 0.4s;
+  }
+  .step-dot.done { background: var(--sun); }
+  .step-dot.active { background: white; }
+  .progress-label { color: white; font-size: 0.8rem; font-weight: 700; min-width: 60px; text-align: right; }
+
+  /* ---- MAIN EXERCÍCIOS ---- */
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 30px 20px 60px;
+  }
+
+  .section-card {
+    background: var(--card-bg);
+    border-radius: 20px;
+    box-shadow: 0 6px 30px rgba(26,111,181,0.12);
+    border: 2px solid var(--border);
+    padding: 30px 32px;
+    margin-bottom: 24px;
+    display: none;
+    animation: fadeSlide 0.45s ease;
+  }
+  .section-card.active { display: block; }
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .section-num {
+    display: inline-block;
+    background: var(--sky);
+    color: white;
+    font-weight: 800;
+    font-size: 0.75rem;
+    padding: 3px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .section-card h2 {
+    font-family: 'Raleway', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: var(--sky);
+    margin-bottom: 6px;
+  }
+  .section-card .intro {
+    font-size: 0.9rem;
+    color: var(--gray);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  /* ---- MULTIPLE CHOICE ---- */
+  .mc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .mc-btn {
+    background: var(--cloud);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--dark);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s;
+    line-height: 1.4;
+  }
+  .mc-btn:hover { background: var(--sky-pale); border-color: var(--sky-light); }
+  .mc-btn.correct { background: #d4f5e0; border-color: var(--green); color: var(--green); }
+  .mc-btn.wrong   { background: #fde8e6; border-color: var(--red); color: var(--red); }
+  .mc-btn:disabled { cursor: default; }
+
+  .mc-question {
+    font-size: 1rem; font-weight: 700; color: var(--dark);
+    margin-bottom: 14px; line-height: 1.4;
+  }
+
+  .mc-block { margin-bottom: 24px; }
+
+  /* ---- FILL BLANK ---- */
+  .fill-sentence {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 2.2;
+    color: var(--dark);
+  }
+  .blank {
+    display: inline-block;
+    border: none;
+    border-bottom: 3px solid var(--sky);
+    background: var(--sky-pale);
+    border-radius: 6px 6px 0 0;
+    padding: 4px 10px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--sky);
+    width: 160px;
+    outline: none;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .blank:focus { border-bottom-color: var(--sun); background: #fff9e8; }
+  .blank.correct-fill { border-bottom-color: var(--green); background: #d4f5e0; color: var(--green); }
+  .blank.wrong-fill   { border-bottom-color: var(--red);   background: #fde8e6; color: var(--red); }
+
+  .fill-item { margin-bottom: 16px; }
+
+  /* ---- DRAG & DROP ---- */
+  .drag-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  .drag-chips-pool {
+    background: var(--sky-pale);
+    border: 2px dashed var(--sky-light);
+    border-radius: 14px;
+    padding: 14px;
+    min-height: 80px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-content: flex-start;
+  }
+  .drag-chip {
+    background: white;
+    border: 2px solid var(--sky-light);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--sky);
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .drag-chip:hover { transform: scale(1.06); box-shadow: 0 4px 12px rgba(26,111,181,0.2); }
+  .drag-chip.dragging { opacity: 0.4; }
+
+  .drag-targets { display: flex; flex-direction: column; gap: 10px; }
+  .drag-row { display: flex; align-items: center; gap: 10px; }
+  .drag-label {
+    background: var(--sky);
+    color: white;
+    border-radius: 10px;
+    padding: 7px 14px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    min-width: 130px;
+    text-align: center;
+  }
+  .drag-label.orange { background: var(--sun); }
+  .drag-zone {
+    flex: 1;
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    min-height: 42px;
+    background: var(--cloud);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .drag-zone.drag-over { background: #e8f4ff; border-color: var(--sky); }
+  .drag-zone .drag-chip { cursor: default; font-size: 0.8rem; }
+  .drag-zone.correct-zone { border-color: var(--green); background: #d4f5e0; }
+  .drag-zone.wrong-zone   { border-color: var(--red);   background: #fde8e6; }
+
+  /* ---- MATCH ---- */
+  .match-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .match-col { display: flex; flex-direction: column; gap: 8px; }
+  .match-col h4 {
+    font-size: 0.8rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--sky); margin-bottom: 4px;
+  }
+  .match-item {
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    background: var(--cloud);
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .match-item:hover { border-color: var(--sky-light); background: var(--sky-pale); }
+  .match-item.selected { border-color: var(--sky); background: var(--sky-pale); }
+  .match-item.matched-ok { border-color: var(--green); background: #d4f5e0; cursor: default; color: var(--green); }
+  .match-item.matched-err { border-color: var(--red); background: #fde8e6; cursor: default; color: var(--red); animation: shake 0.3s; }
+  .match-item .emoji { margin-right: 6px; }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}
+    25%{transform:translateX(-6px)}
+    75%{transform:translateX(6px)}
+  }
+
+  /* ---- BUTTONS ---- */
+  .btn-row { display: flex; gap: 12px; margin-top: 22px; justify-content: flex-end; }
+  .btn {
+    padding: 11px 28px;
+    border-radius: 30px;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .btn-check {
+    background: var(--sky);
+    color: white;
+    box-shadow: 0 4px 15px rgba(26,111,181,0.35);
+  }
+  .btn-check:hover { background: #1460a0; transform: translateY(-2px); }
+  .btn-next {
+    background: var(--sun);
+    color: white;
+    box-shadow: 0 4px 15px rgba(245,166,35,0.4);
+  }
+  .btn-next:hover { background: #e0941a; transform: translateY(-2px); }
+  .btn:disabled { opacity: 0.5; cursor: default; transform: none !important; }
+
+  /* ---- FEEDBACK ---- */
+  .feedback {
+    margin-top: 14px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    display: none;
+    line-height: 1.5;
+  }
+  .feedback.show { display: block; }
+  .feedback.ok  { background: #d4f5e0; color: var(--green); border: 1.5px solid var(--green); }
+  .feedback.err { background: #fde8e6; color: var(--red);   border: 1.5px solid var(--red); }
+
+  /* ---- SCORE ---- */
+  #score-screen {
+    text-align: center;
+    padding: 40px 20px;
+    display: none;
+  }
+  #score-screen.active { display: block; animation: fadeSlide 0.5s ease; }
+  .score-circle {
+    width: 150px; height: 150px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--sky), var(--sky-light));
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    margin: 0 auto 24px;
+    box-shadow: 0 10px 40px rgba(26,111,181,0.35);
+    color: white;
+  }
+  .score-circle .big { font-size: 3rem; font-weight: 900; font-family: 'Raleway', sans-serif; line-height: 1; }
+  .score-circle .small { font-size: 0.85rem; opacity: 0.85; }
+  #score-screen h2 { font-family: 'Raleway', sans-serif; font-size: 1.8rem; font-weight: 900; color: var(--sky); margin-bottom: 10px; }
+  #score-screen p  { color: var(--gray); font-size: 1rem; margin-bottom: 24px; }
+  .score-breakdown {
+    background: var(--cloud);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 0 auto 24px;
+    max-width: 500px;
+    border: 2px solid var(--border);
+    text-align: left;
+  }
+  .score-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+  .score-row:last-child { border-bottom: none; }
+  .score-row .pts { font-weight: 800; color: var(--sky); }
+  .btn-restart {
+    background: linear-gradient(135deg, var(--sky), var(--sky-light));
+    color: white; border: none; padding: 14px 36px;
+    border-radius: 30px; font-family: 'Nunito', sans-serif;
+    font-size: 1rem; font-weight: 800; cursor: pointer;
+    box-shadow: 0 6px 20px rgba(26,111,181,0.3);
+    transition: transform 0.2s;
+  }
+  .btn-restart:hover { transform: scale(1.05); }
+
+  /* ---- LATITUDE MAP VISUAL ---- */
+  .lat-visual {
+    background: linear-gradient(to right, #e8f4ff, #ddf0ff);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 20px;
+    font-size: 0.82rem;
+    color: var(--gray);
+  }
+  .lat-visual .lat-title {
+    font-weight: 800; color: var(--sky); font-size: 0.85rem;
+    margin-bottom: 10px; text-align: center;
+  }
+  .lat-bar {
+    display: flex;
+    align-items: stretch;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 36px;
+    border: 1.5px solid var(--border);
+    margin-bottom: 6px;
+  }
+  .lat-seg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    flex: 1;
+  }
+  .lat-seg.polar    { background: #6bb8e8; }
+  .lat-seg.subpolar { background: #3a9ad4; }
+  .lat-seg.temperate{ background: #27ae60; }
+  .lat-seg.subtrop  { background: #f5a623; }
+  .lat-seg.equat    { background: #e74c3c; }
+  .lat-seg.subtrop2 { background: #f5a623; }
+  .lat-seg.temperate2{background: #27ae60; }
+  .lat-seg.subpolar2{ background: #3a9ad4; }
+  .lat-seg.polar2   { background: #6bb8e8; }
+  .lat-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--gray);
+    padding: 0 2px;
+  }
+
+  @media (max-width: 580px) {
+    .mc-grid { grid-template-columns: 1fr; }
+    .drag-layout, .match-layout { grid-template-columns: 1fr; }
+    header::after { display: none; }
+    header h1 { font-size: 1.3rem; }
+    .timer-bar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="icon">🌤️</div>
+  <div>
+    <h1>Exercício Final — Clima</h1>
+    <p>Francisco Cavaco · Slides, Vídeo e Exercícios</p>
+  </div>
+  <div class="timer-bar">
+    <div class="t-label">Tempo</div>
+    <div class="t-count" id="timer">20:00</div>
+  </div>
+</header>
+
+<section class="module-section">
+    <div class="slide-container">
+        <h2 style="color:var(--sky); margin-bottom:15px; font-family:'Raleway';">📚 Apresentação de Diapositivos</h2>
+        <div class="slide-viewer">
+            <img id="s1" src="Diapositivo1.JPG" class="active">
+            <img id="s2" src="Diapositivo2.JPG">
+            <img id="s3" src="Diapositivo3.JPG">
+            <img id="s4" src="Diapositivo4.JPG">
+            <img id="s5" src="Diapositivo5.JPG">
+            <img id="s6" src="Diapositivo6.JPG">
+            <img id="s7" src="Diapositivo7.JPG">
+            <img id="s8" src="Diapositivo8.JPG">
+            <img id="s9" src="Diapositivo9.jpg">
+        </div>
+        <div style="display:flex; justify-content:center; gap:20px; align-items:center;">
+            <button class="btn-nav" id="btnPrevSlide" onclick="moveSlide(-1)" disabled>❮ Voltar</button>
+            <span id="slideIndicator" style="font-weight:800; color:var(--sky);">Slide 1 / 9</span>
+            <button class="btn-nav" id="btnNextSlide" onclick="moveSlide(1)">Avançar ❯</button>
+        </div>
+    </div>
+</section>
+
+<section class="module-section">
+    <div class="slide-container">
+        <h2 style="color:var(--sky); margin-bottom:15px; font-family:'Raleway';">🎥 Vídeo da Aula</h2>
+        <video controls>
+            <source src="0504.mp4" type="video/mp4">
+            O teu navegador não suporta vídeos.
+        </video>
+    </div>
+</section>
+
+<div class="progress-track">
+  <div class="progress-steps">
+    <div class="step-dot active" id="dot-0"></div>
+    <div class="step-dot" id="dot-1"></div>
+    <div class="step-dot" id="dot-2"></div>
+    <div class="step-dot" id="dot-3"></div>
+    <div class="step-dot" id="dot-4"></div>
+    <div class="step-dot" id="dot-5"></div>
+  </div>
+  <div class="progress-label" id="prog-label">1 / 6</div>
+</div>
+
+<main>
+
+  <div class="section-card active" id="sec-0">
+    <span class="section-num">Secção 1 de 6</span>
+    <h2>Escolha Múltipla — Conceitos de Clima</h2>
+    <p class="intro">Seleciona a resposta correta para cada pergunta. Cada resposta certa vale 2 pontos.</p>
+
+    <div class="mc-block">
+      <div class="mc-question">1. Qual a principal diferença entre <strong>Estado do Tempo</strong> e <strong>Clima</strong>?</div>
+      <div class="mc-grid" id="mc1">
+        <button class="mc-btn" onclick="checkMC(this,'mc1','a')">a) O estado do tempo é estável; o clima é variável.</button>
+        <button class="mc-btn" onclick="checkMC(this,'mc1','b')">b) O estado do tempo descreve condições momentâneas; o clima é a sucessão habitual ao longo de anos.</button>
+        <button class="mc-btn" onclick="checkMC(this,'mc1','c')">c) O clima é medido em horas; o estado do tempo em décadas.</button>
+        <button class="mc-btn" onclick="checkMC(this,'mc1','d')">d) São conceitos idênticos usados em contextos diferentes.</button>
+      </div>
+    </div>
+
+    <div class="mc-block">
+      <div class="mc-question">2. A <strong>Meteorologia</strong> tem como foco temporal principal:</div>
+      <div class="mc-grid" id="mc2">
+        <button class="mc-btn" onclick="checkMC(this,'mc2','a')">a) Análise de longas séries de observação passada.</button>
+        <button class="mc-btn" onclick="checkMC(this,'mc2','b')">b) Definição dos tipos de clima e sua distribuição espacial.</button>
+        <button class="mc-btn" onclick="checkMC(this,'mc2','c')">c) Análise do momento e previsão do futuro imediato.</button>
+        <button class="mc-btn" onclick="checkMC(this,'mc2','d')">d) Planeamento agrícola a longo prazo.</button>
+      </div>
+    </div>
+
+    <div class="mc-block">
+      <div class="mc-question">3. Qual instrumento mede a <strong>Pressão Atmosférica</strong>?</div>
+      <div class="mc-grid" id="mc3">
+        <button class="mc-btn" onclick="checkMC(this,'mc3','a')">a) Termómetro</button>
+        <button class="mc-btn" onclick="checkMC(this,'mc3','b')">b) Higrómetro</button>
+        <button class="mc-btn" onclick="checkMC(this,'mc3','c')">c) Pluviómetro</button>
+        <button class="mc-btn" onclick="checkMC(this,'mc3','d')">d) Barómetro</button>
+      </div>
+    </div>
+
+    <div class="feedback" id="fb-mc"></div>
+    <div class="btn-row">
+      <button class="btn btn-check" onclick="checkSec0()">Verificar ✓</button>
+      <button class="btn btn-next" id="next-0" onclick="goTo(1)" disabled>Seguinte →</button>
+    </div>
+  </div>
+
+  <div class="section-card" id="sec-1">
+    <span class="section-num">Secção 2 de 6</span>
+    <h2>Completa as Frases</h2>
+    <p class="intro">Preenche os espaços em branco com a palavra ou expressão correta.</p>
+
+    <div class="fill-item">
+      <div class="fill-sentence">
+        🌡️ O instrumento que mede a temperatura do ar é o <input class="blank" id="f1" placeholder="____"> e a sua unidade é graus Celsius.
+      </div>
+    </div>
+    <div class="fill-item">
+      <div class="fill-sentence">
+        ☁️ A <strong>nebulosidade</strong> é medida pelo <input class="blank" id="f2" placeholder="____"> e exprime a fração de céu coberto por nuvens.
+      </div>
+    </div>
+    <div class="fill-item">
+      <div class="fill-sentence">
+        ☀️ O <strong>heliógrafo</strong> mede a <input class="blank" id="f3" placeholder="____">, que representa o período em que o Sol se encontra a descoberto.
+      </div>
+    </div>
+    <div class="fill-item">
+      <div class="fill-sentence">
+        💨 O vento é medido pelo <input class="blank" id="f4" placeholder="____"> e a sua unidade é km/h ou nós.
+      </div>
+    </div>
+    <div class="fill-item">
+      <div class="fill-sentence">
+        🌍 O clima é definido a partir de um longo período de tempo, idealmente <input class="blank" id="f5" placeholder="____"> anos.
+      </div>
+    </div>
+
+    <div class="feedback" id="fb-fill"></div>
+    <div class="btn-row">
+      <button class="btn btn-check" onclick="checkSec1()">Verificar ✓</button>
+      <button class="btn btn-next" id="next-1" onclick="goTo(2)" disabled>Seguinte →</button>
+    </div>
+  </div>
+
+  <div class="section-card" id="sec-2">
+    <span class="section-num">Secção 3 de 6</span>
+    <h2>Arrasta para o Lugar Certo</h2>
+    <p class="intro">Arrasta cada elemento climático para a coluna correta: <strong>Estado do Tempo</strong> ou <strong>Clima</strong>.</p>
+
+    <div class="drag-layout">
+      <div>
+        <p style="font-size:0.85rem;font-weight:700;color:var(--gray);margin-bottom:8px;">🃏 Elementos para classificar:</p>
+        <div class="drag-chips-pool" id="pool">
+          <div class="drag-chip" draggable="true" data-val="variavel" ondragstart="dragStart(event)">Altamente variável</div>
+          <div class="drag-chip" draggable="true" data-val="horas" ondragstart="dragStart(event)">Escala de horas/dias</div>
+          <div class="drag-chip" draggable="true" data-val="padroes" ondragstart="dragStart(event)">Baseado em padrões</div>
+          <div class="drag-chip" draggable="true" data-val="30anos" ondragstart="dragStart(event)">Período de ~30 anos</div>
+          <div class="drag-chip" draggable="true" data-val="previsao" ondragstart="dragStart(event)">Previsão a curto prazo</div>
+          <div class="drag-chip" draggable="true" data-val="estavel" ondragstart="dragStart(event)">Estável e previsível</div>
+        </div>
+      </div>
+
+      <div class="drag-targets">
+        <div class="drag-row">
+          <div class="drag-label">⏱️ Estado do Tempo</div>
+          <div class="drag-zone" id="zone-tempo"
+               ondragover="dragOver(event)"
+               ondrop="dropTo(event,'tempo')"
+               ondragleave="dragLeave(event)">
+          </div>
+        </div>
+        <div class="drag-row">
+          <div class="drag-label orange">📅 Clima</div>
+          <div class="drag-zone" id="zone-clima"
+               ondragover="dragOver(event)"
+               ondrop="dropTo(event,'clima')"
+               ondragleave="dragLeave(event)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feedback" id="fb-drag"></div>
+    <div class="btn-row">
+      <button class="btn btn-check" onclick="checkSec2()">Verificar ✓</button>
+      <button class="btn btn-next" id="next-2" onclick="goTo(3)" disabled>Seguinte →</button>
+    </div>
+  </div>
+
+  <div class="section-card" id="sec-3">
+    <span class="section-num">Secção 4 de 6</span>
+    <h2>Faz a Correspondência — Instrumentos</h2>
+    <p class="intro">Clica num instrumento e depois na definição correta para os ligar. Cada par correto vale 2 pontos.</p>
+
+    <div class="match-layout">
+      <div class="match-col">
+        <h4>🔧 Instrumento</h4>
+        <div class="match-item" id="m-term" onclick="selectMatch(this,'term','termometro','match1')"><span class="emoji">🌡️</span> Termómetro</div>
+        <div class="match-item" id="m-pluv" onclick="selectMatch(this,'term','pluviometro','match1')"><span class="emoji">🪣</span> Pluviómetro</div>
+        <div class="match-item" id="m-baro" onclick="selectMatch(this,'term','barometro','match1')"><span class="emoji">⏱️</span> Barómetro</div>
+        <div class="match-item" id="m-anem" onclick="selectMatch(this,'term','anemometro','match1')"><span class="emoji">💨</span> Anemómetro</div>
+        <div class="match-item" id="m-higr" onclick="selectMatch(this,'term','higrometro','match1')"><span class="emoji">💧</span> Higrómetro</div>
+      </div>
+      <div class="match-col">
+        <h4>📖 Definição / Unidade</h4>
+        <div class="match-item" id="d-barometro" onclick="selectMatch(this,'def','barometro','match1')">Mede a força que o ar exerce sobre a superfície terrestre. Unidade: mb/hPa.</div>
+        <div class="match-item" id="d-termometro" onclick="selectMatch(this,'def','termometro','match1')">Mede o grau de aquecimento do ar. Unidade: °C ou °F.</div>
+        <div class="match-item" id="d-anemometro" onclick="selectMatch(this,'def','anemometro','match1')">Mede a deslocação horizontal do ar. Unidade: km/h ou nós.</div>
+        <div class="match-item" id="d-higrometro" onclick="selectMatch(this,'def','higrometro','match1')">Mede a quantidade de vapor de água no ar. Unidade: % ou g/m³.</div>
+        <div class="match-item" id="d-pluviometro" onclick="selectMatch(this,'def','pluviometro','match1')">Mede a queda de água (chuva, neve, granizo). Unidade: mm ou l/m².</div>
+      </div>
+    </div>
+
+    <div class="feedback" id="fb-match1"></div>
+    <div class="btn-row">
+      <button class="btn btn-next" id="next-3" onclick="goTo(4)">Seguinte →</button>
+    </div>
+  </div>
+
+  <div class="section-card" id="sec-4">
+    <span class="section-num">Secção 5 de 6</span>
+    <h2>Escolha Múltipla — Precipitação e Latitude</h2>
+    <p class="intro">Seleciona a resposta correta sobre a distribuição da precipitação em função da latitude. Cada resposta certa vale 2 pontos.</p>
+
+    <div class="lat-visual">
+      <div class="lat-title">🌍 Referência — Zonas de Latitude</div>
+      <div class="lat-bar">
+        <div class="lat-seg polar">90°N<br>Polar</div>
+        <div class="lat-seg subpolar">60°N<br>Subpolar</div>
+        <div class="lat-seg temperate">45°N<br>Temp.</div>
+        <div class="lat-seg subtrop">30°N<br>Subtrop.</div>
+        <div class="lat-seg equat">0°<br>Equador</div>
+        <div class="lat-seg subtrop2">30°S<br>Subtrop.</div>
+        <div class="lat-seg temperate2">45°S<br>Temp.</div>
+        <div class="lat-seg subpolar2">60°S<br>Subpolar</div>
+        <div class="lat-seg polar2">90°S<br>Polar</div>
+      </div>
+      <div class="lat-labels">
+        <span>🔵 Baixa precipitação</span>
+        <span>🟡 Moderada</span>
+        <span>🔴 Muito elevada</span>
+      </div>
+    </div>
+
+    <div class="mc-block">
+      <div class="mc-question">1. Na zona equatorial (entre 0° e 10° de latitude), a precipitação é abundante principalmente devido a:</div>
+      <div class="mc-grid" id="pmc1">
+        <button class="mc-btn" onclick="checkMC(this,'pmc1','a')">a) Ventos alísios que trazem ar seco do oceano.</button>
+        <button class="mc-btn" onclick="checkMC(this,'pmc1','b')">b) Intensa radiação solar que provoca ascensão de massas de ar húmido e consequente condensação.</button>
+        <button class="mc-btn" onclick="checkMC(this,'pmc1','c')">c) Correntes oceânicas frias que condensam o vapor de água.</button>
+        <button class="mc-btn" onclick="checkMC(this,'pmc1','d')">d) Elevada pressão atmosférica que favorece as chuvas convectivas.</button>
+      </div>
+    </div>
+
+    <div class="mc-block">
+      <div class="mc-question">2. Nas latitudes subtropicais (~30° N e S), a precipitação é geralmente <strong>escassa</strong> porque:</div>
+      <div class="mc-grid" id="pmc2">
+        <button class="mc-btn" onclick="checkMC(this,'pmc2','a')">a) Existe uma zona de convergência intertropical (ZCIT) que absorve toda a humidade.</button>
+        <button class="mc-btn" onclick="checkMC(this,'pmc2','b')">b) Predominam anticiclones subtropicais com subsidência do ar, inibindo a formação de nuvens e chuva.</button>
+        <button class="mc-btn" onclick="checkMC(this,'pmc2','c')">c) As temperaturas muito baixas impedem a evaporação e a formação de chuva.</button>
+        <button class="mc-btn" onclick="checkMC(this,'pmc2','d')">d) Os ventos de oeste trazem ar seco continental.</button>
+      </div>
+    </div>
+
+    <div class="mc-block">
+      <div class="mc-question">3. Nas latitudes temperadas (~40°–60° N e S), as chuvas são frequentes ao longo do ano graças a:</div>
+      <div class="mc-grid" id="pmc3">
+        <button class="mc-btn" onclick="checkMC(this,'pmc3','a')">a) À ação da ZCIT que se desloca até às latitudes médias.</button>
+        <button class="mc-btn" onclick="checkMC(this,'pmc3','b')">b) Ao encontro de massas de ar frio polar com ar quente tropical, originando frentes e precipitação frontal.</button>
+        <button class="mc-btn" onclick="checkMC(this,'pmc3','c')">c) À forte radiação solar que provoca chuva convectiva intensa todo o ano.</button>
+        <button class="mc-btn" onclick="checkMC(this,'pmc3','d')">d) Aos ventos alísios que transportam humidade do Atlântico.</button>
+      </div>
+    </div>
+
+    <div class="mc-block">
+      <div class="mc-question">4. A <strong>Zona de Convergência Intertropical (ZCIT)</strong> é responsável por:</div>
+      <div class="mc-grid" id="pmc4">
+        <button class="mc-btn" onclick="checkMC(this,'pmc4','a')">a) Criar zonas de alta pressão no equador que inibem as chuvas.</button>
+        <button class="mc-btn" onclick="checkMC(this,'pmc4','b')">b) Originar desertos subtropicais como o Sahara e o Atacama.</button>
+        <button class="mc-btn" onclick="checkMC(this,'pmc4','c')">c) Convergir ventos alísios de ambos os hemisférios, provocando ascendência do ar e elevada precipitação equatorial.</button>
+        <button class="mc-btn" onclick="checkMC(this,'pmc4','d')">d) Distribuir as chuvas de forma uniforme por todas as latitudes.</button>
+      </div>
+    </div>
+
+    <div class="mc-block">
+      <div class="mc-question">5. Qual das seguintes regiões apresenta os valores de precipitação <strong>mais baixos</strong> do planeta?</div>
+      <div class="mc-grid" id="pmc5">
+        <button class="mc-btn" onclick="checkMC(this,'pmc5','a')">a) Florestas equatoriais da Amazónia (0°–5° S).</button>
+        <button class="mc-btn" onclick="checkMC(this,'pmc5','b')">b) Costas temperadas da Europa Ocidental (~50° N).</button>
+        <button class="mc-btn" onclick="checkMC(this,'pmc5','c')">c) Desertos quentes subtropicais, como o Sahara e o Atacama (~20°–30°).</button>
+        <button class="mc-btn" onclick="checkMC(this,'pmc5','d')">d) Florestas de folha caduca das latitudes temperadas.</button>
+      </div>
+    </div>
+
+    <div class="feedback" id="fb-pmc"></div>
+    <div class="btn-row">
+      <button class="btn btn-check" onclick="checkSec4()">Verificar ✓</button>
+      <button class="btn btn-next" id="next-4" onclick="goTo(5)" disabled>Seguinte →</button>
+    </div>
+  </div>
+
+  <div class="section-card" id="sec-5">
+    <span class="section-num">Secção 6 de 6</span>
+    <h2>Correspondência — Precipitação e Latitude</h2>
+    <p class="intro">Liga cada zona de latitude à sua característica de precipitação. Clica numa zona e depois na descrição correspondente. Cada par correto vale 2 pontos.</p>
+
+    <div class="match-layout">
+      <div class="match-col">
+        <h4>🌐 Zona de Latitude</h4>
+        <div class="match-item" id="ml-equat" onclick="selectMatch(this,'term','equatorial','match2')"><span class="emoji">🔴</span> Equatorial (0°–10°)</div>
+        <div class="match-item" id="ml-subtrop" onclick="selectMatch(this,'term','subtropical','match2')"><span class="emoji">🟡</span> Subtropical (~30°)</div>
+        <div class="match-item" id="ml-temp" onclick="selectMatch(this,'term','temperada','match2')"><span class="emoji">🟢</span> Temperada (40°–60°)</div>
+        <div class="match-item" id="ml-subpolar" onclick="selectMatch(this,'term','subpolar','match2')"><span class="emoji">🔵</span> Subpolar (60°–70°)</div>
+        <div class="match-item" id="ml-polar" onclick="selectMatch(this,'term','polar','match2')"><span class="emoji">⬜</span> Polar (&gt;70°)</div>
+      </div>
+      <div class="match-col">
+        <h4>🌧️ Regime de Precipitação</h4>
+        <div class="match-item" id="dl-polar" onclick="selectMatch(this,'def','polar','match2')">Precipitação muito escassa e sob forma de neve; ar muito frio e seco com pouco vapor de água disponível.</div>
+        <div class="match-item" id="dl-equatorial" onclick="selectMatch(this,'def','equatorial','match2')">Precipitação muito elevada (>2000 mm/ano); chuvas convectivas diárias provocadas pela intensa radiação solar e pela ZCIT.</div>
+        <div class="match-item" id="dl-temperada" onclick="selectMatch(this,'def','temperada','match2')">Precipitação regular ao longo do ano, associada à passagem de frentes frias e à atividade ciclónica das latitudes médias.</div>
+        <div class="match-item" id="dl-subtropical" onclick="selectMatch(this,'def','subtropical','match2')">Precipitação escassa; domínio de anticiclones com subsidência do ar que inibe a condensação — zona dos grandes desertos.</div>
+        <div class="match-item" id="dl-subpolar" onclick="selectMatch(this,'def','subpolar','match2')">Precipitação moderada a baixa; clima frio com neve frequente, precipitação concentrada no verão austral/boreal.</div>
+      </div>
+    </div>
+
+    <div class="feedback" id="fb-match2"></div>
+    <div class="btn-row">
+      <button class="btn btn-next" id="next-5" onclick="showScore()">Ver Resultado 🏆</button>
+    </div>
+  </div>
+
+  <div id="score-screen">
+    <div class="score-circle">
+      <div class="big" id="final-score">0</div>
+      <div class="small">/ 56 pts</div>
+    </div>
+    <h2 id="score-title">Resultado</h2>
+    <p id="score-msg"></p>
+    <div class="score-breakdown">
+      <div class="score-row"><span>Escolha Múltipla — Clima (3×2)</span><span class="pts" id="sc1">0 / 6</span></div>
+      <div class="score-row"><span>Preenchimento (5×2)</span><span class="pts" id="sc2">0 / 10</span></div>
+      <div class="score-row"><span>Arrastar (6×1)</span><span class="pts" id="sc3">0 / 6</span></div>
+      <div class="score-row"><span>Correspondência — Instrumentos (5×2)</span><span class="pts" id="sc4">0 / 10</span></div>
+      <div class="score-row"><span>Escolha Múltipla — Precipitação (5×2)</span><span class="pts" id="sc5">0 / 10</span></div>
+      <div class="score-row"><span>Correspondência — Latitude (5×2)</span><span class="pts" id="sc6">0 / 10</span></div>
+    </div>
+    <button class="btn-restart" onclick="restart()">🔄 Tentar novamente</button>
+  </div>
+
+</main>
+
+<script>
+// ========== LÓGICA DE NAVEGAÇÃO DE SLIDES ==========
+let currentSlide = 1;
+const totalSlides = 9;
+
+function moveSlide(n) {
+    document.getElementById('s' + currentSlide).classList.remove('active');
+    currentSlide += n;
+    document.getElementById('s' + currentSlide).classList.add('active');
+    
+    document.getElementById('slideIndicator').innerText = "Slide " + currentSlide + " / " + totalSlides;
+    document.getElementById('btnPrevSlide').disabled = (currentSlide === 1);
+    document.getElementById('btnNextSlide').disabled = (currentSlide === totalSlides);
+}
+
+// ========== LÓGICA DO TEU EXERCÍCIO ORIGINAL (RECUPERADA) ==========
+let scores = { mc: 0, fill: 0, drag: 0, match1: 0, pmc: 0, match2: 0 };
+let mcDone = [false, false, false];
+let pmcDone = [false, false, false, false, false];
+let fillDone = false;
+let dragDone = false;
+let match1
