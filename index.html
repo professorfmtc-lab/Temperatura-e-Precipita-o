@@ -3,493 +3,126 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Exercício Final — Clima</title>
+<title>Temperatura e Precipitação</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Raleway:wght@700;900&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --sky: #1a6fb5;
-    --sky-light: #5baee8;
-    --sky-pale: #ddf0ff;
-    --cloud: #f0f8ff;
-    --sun: #f5a623;
-    --green: #27ae60;
-    --red: #e74c3c;
-    --gray: #7f8c8d;
-    --dark: #1a2a3a;
-    --card-bg: #ffffff;
-    --border: #c8e0f5;
-    --slide-bg: #2c3e50; /* Cor de fundo para os slides */
-  }
-
+  :root { --sky: #1a6fb5; --sky-light: #5baee8; --sky-pale: #ddf0ff; --cloud: #f0f8ff; --sun: #f5a623; --green: #27ae60; --red: #e74c3c; --gray: #7f8c8d; --dark: #1a2a3a; --card-bg: #ffffff; --border: #c8e0f5; --slide-bg: #2c3e50; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Nunito', sans-serif;
-    background: linear-gradient(160deg, #e8f4ff 0%, #d0ebff 50%, #b8dff5 100%);
-    min-height: 100vh;
-    color: var(--dark);
-  }
-
-  /* ---- HEADER ---- */
-  header {
-    background: linear-gradient(135deg, #1a6fb5, #0d4f8a);
-    color: white;
-    padding: 24px 32px 20px;
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    box-shadow: 0 4px 20px rgba(26,111,181,0.4);
-    position: relative;
-    overflow: hidden;
-  }
-  header::after {
-    content: '☁️ 🌤️ ⛅';
-    position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
-    font-size: 2rem; opacity: 0.3;
-    letter-spacing: 10px;
-  }
+  body { font-family: 'Nunito', sans-serif; background: linear-gradient(160deg, #e8f4ff 0%, #d0ebff 50%, #b8dff5 100%); min-height: 100vh; color: var(--dark); }
+  
+  header { background: linear-gradient(135deg, #1a6fb5, #0d4f8a); color: white; padding: 24px 32px 20px; display: flex; align-items: center; gap: 18px; box-shadow: 0 4px 20px rgba(26,111,181,0.4); position: relative; overflow: hidden; }
+  header::after { content: '☁️ 🌤️ ⛅'; position: absolute; right: 40px; top: 50%; transform: translateY(-50%); font-size: 2rem; opacity: 0.3; letter-spacing: 10px; }
   header .icon { font-size: 2.8rem; }
   header h1 { font-family: 'Raleway', sans-serif; font-size: 1.7rem; font-weight: 900; }
   header p { font-size: 0.9rem; opacity: 0.85; margin-top: 2px; }
-  .timer-bar {
-    margin-left: auto;
-    background: rgba(255,255,255,0.15);
-    border: 2px solid rgba(255,255,255,0.4);
-    border-radius: 12px;
-    padding: 8px 20px;
-    text-align: center;
-    min-width: 110px;
-  }
+  
+  .timer-bar { margin-left: auto; background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.4); border-radius: 12px; padding: 8px 20px; text-align: center; min-width: 110px; }
   .timer-bar .t-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
   .timer-bar .t-count { font-size: 1.8rem; font-weight: 900; font-family: 'Raleway', sans-serif; }
 
-  /* ---- NOVAS SEÇÕES: SLIDES E VÍDEO ---- */
-  .module-section {
-    max-width: 860px;
-    margin: 24px auto;
-    padding: 0 20px;
-  }
+  .module-section { max-width: 860px; margin: 24px auto; padding: 0 20px; }
+  .slide-container { background: var(--card-bg); border-radius: 20px; border: 2px solid var(--border); padding: 20px; text-align: center; box-shadow: 0 6px 30px rgba(26,111,181,0.12); }
+  .slide-viewer { background-color: var(--slide-bg); background-image: radial-gradient(circle, #34495e, #2c3e50); border-radius: 12px; height: 480px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 4px solid #222; margin-bottom: 15px; }
+  .slide-viewer img { max-width: 100%; max-height: 100%; display: none; object-fit: contain; }
+  .slide-viewer img.active { display: block; }
+  video { width: 100%; border-radius: 15px; background: #000; box-shadow: 0 6px 30px rgba(0,0,0,0.2); }
+  .btn-nav-media { padding: 10px 25px; background: var(--sky); color: white; border: none; border-radius: 25px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+  .btn-nav-media:hover { background: var(--sky-light); }
+  .btn-nav-media:disabled { background: #ccc; cursor: not-allowed; }
 
-  .slide-container {
-    background: var(--card-bg);
-    border-radius: 20px;
-    border: 2px solid var(--border);
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 6px 30px rgba(26,111,181,0.12);
-  }
-
-  .slide-viewer {
-    background-color: var(--slide-bg);
-    background-image: radial-gradient(circle, #34495e, #2c3e50);
-    border-radius: 12px;
-    height: 480px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border: 4px solid #222;
-    margin-bottom: 15px;
-  }
-
-  .slide-viewer img {
-    max-width: 100%;
-    max-height: 100%;
-    display: none;
-    object-fit: contain;
-  }
-
-  .slide-viewer img.active {
-    display: block;
-  }
-
-  video {
-    width: 100%;
-    border-radius: 15px;
-    box-shadow: 0 6px 30px rgba(0,0,0,0.2);
-    background: #000;
-  }
-
-  .btn-nav {
-    padding: 10px 25px;
-    background: var(--sky);
-    color: white;
-    border: none;
-    border-radius: 25px;
-    font-weight: 800;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-  .btn-nav:hover { background: var(--sky-light); }
-  .btn-nav:disabled { background: #ccc; cursor: not-allowed; }
-
-  /* ---- PROGRESS TRACK ---- */
-  .progress-track {
-    background: var(--sky);
-    padding: 10px 32px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .progress-steps {
-    display: flex; gap: 6px; flex: 1;
-  }
-  .step-dot {
-    flex: 1; height: 8px; border-radius: 4px;
-    background: rgba(255,255,255,0.3);
-    transition: background 0.4s;
-  }
+  .progress-track { background: var(--sky); padding: 10px 32px; display: flex; align-items: center; gap: 12px; }
+  .progress-steps { display: flex; gap: 6px; flex: 1; }
+  .step-dot { flex: 1; height: 8px; border-radius: 4px; background: rgba(255,255,255,0.3); transition: background 0.4s; }
   .step-dot.done { background: var(--sun); }
   .step-dot.active { background: white; }
   .progress-label { color: white; font-size: 0.8rem; font-weight: 700; min-width: 60px; text-align: right; }
 
-  /* ---- MAIN EXERCÍCIOS ---- */
-  main {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 30px 20px 60px;
-  }
-
-  .section-card {
-    background: var(--card-bg);
-    border-radius: 20px;
-    box-shadow: 0 6px 30px rgba(26,111,181,0.12);
-    border: 2px solid var(--border);
-    padding: 30px 32px;
-    margin-bottom: 24px;
-    display: none;
-    animation: fadeSlide 0.45s ease;
-  }
+  main { max-width: 860px; margin: 0 auto; padding: 30px 20px 60px; }
+  .section-card { background: var(--card-bg); border-radius: 20px; box-shadow: 0 6px 30px rgba(26,111,181,0.12); border: 2px solid var(--border); padding: 30px 32px; margin-bottom: 24px; display: none; animation: fadeSlide 0.45s ease; }
   .section-card.active { display: block; }
-  @keyframes fadeSlide {
-    from { opacity: 0; transform: translateY(18px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes fadeSlide { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 
-  .section-num {
-    display: inline-block;
-    background: var(--sky);
-    color: white;
-    font-weight: 800;
-    font-size: 0.75rem;
-    padding: 3px 12px;
-    border-radius: 20px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
-  }
-  .section-card h2 {
-    font-family: 'Raleway', sans-serif;
-    font-size: 1.25rem;
-    font-weight: 900;
-    color: var(--sky);
-    margin-bottom: 6px;
-  }
-  .section-card .intro {
-    font-size: 0.9rem;
-    color: var(--gray);
-    margin-bottom: 20px;
-    line-height: 1.5;
-  }
+  .section-num { display: inline-block; background: var(--sky); color: white; font-weight: 800; font-size: 0.75rem; padding: 3px 12px; border-radius: 20px; text-transform: uppercase; margin-bottom: 10px; }
+  .section-card h2 { font-family: 'Raleway', sans-serif; font-size: 1.25rem; font-weight: 900; color: var(--sky); margin-bottom: 6px; }
+  .section-card .intro { font-size: 0.9rem; color: var(--gray); margin-bottom: 20px; line-height: 1.5; }
 
-  /* ---- MULTIPLE CHOICE ---- */
-  .mc-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-  .mc-btn {
-    background: var(--cloud);
-    border: 2px solid var(--border);
-    border-radius: 12px;
-    padding: 12px 16px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--dark);
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.2s;
-    line-height: 1.4;
-  }
+  .mc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mc-btn { background: var(--cloud); border: 2px solid var(--border); border-radius: 12px; padding: 12px 16px; font-family: 'Nunito', sans-serif; font-size: 0.9rem; font-weight: 600; color: var(--dark); cursor: pointer; text-align: left; transition: all 0.2s; line-height: 1.4; }
   .mc-btn:hover { background: var(--sky-pale); border-color: var(--sky-light); }
   .mc-btn.correct { background: #d4f5e0; border-color: var(--green); color: var(--green); }
-  .mc-btn.wrong   { background: #fde8e6; border-color: var(--red); color: var(--red); }
+  .mc-btn.wrong { background: #fde8e6; border-color: var(--red); color: var(--red); }
   .mc-btn:disabled { cursor: default; }
-
-  .mc-question {
-    font-size: 1rem; font-weight: 700; color: var(--dark);
-    margin-bottom: 14px; line-height: 1.4;
-  }
-
+  .mc-question { font-size: 1rem; font-weight: 700; color: var(--dark); margin-bottom: 14px; line-height: 1.4; }
   .mc-block { margin-bottom: 24px; }
 
-  /* ---- FILL BLANK ---- */
-  .fill-sentence {
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 2.2;
-    color: var(--dark);
-  }
-  .blank {
-    display: inline-block;
-    border: none;
-    border-bottom: 3px solid var(--sky);
-    background: var(--sky-pale);
-    border-radius: 6px 6px 0 0;
-    padding: 4px 10px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--sky);
-    width: 160px;
-    outline: none;
-    text-align: center;
-    transition: border-color 0.2s;
-  }
+  .fill-sentence { font-size: 1rem; font-weight: 600; line-height: 2.2; color: var(--dark); }
+  .blank { display: inline-block; border: none; border-bottom: 3px solid var(--sky); background: var(--sky-pale); border-radius: 6px 6px 0 0; padding: 4px 10px; font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--sky); width: 160px; outline: none; text-align: center; transition: border-color 0.2s; }
   .blank:focus { border-bottom-color: var(--sun); background: #fff9e8; }
   .blank.correct-fill { border-bottom-color: var(--green); background: #d4f5e0; color: var(--green); }
-  .blank.wrong-fill   { border-bottom-color: var(--red);   background: #fde8e6; color: var(--red); }
-
+  .blank.wrong-fill { border-bottom-color: var(--red); background: #fde8e6; color: var(--red); }
   .fill-item { margin-bottom: 16px; }
 
-  /* ---- DRAG & DROP ---- */
-  .drag-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    align-items: start;
-  }
-  .drag-chips-pool {
-    background: var(--sky-pale);
-    border: 2px dashed var(--sky-light);
-    border-radius: 14px;
-    padding: 14px;
-    min-height: 80px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-content: flex-start;
-  }
-  .drag-chip {
-    background: white;
-    border: 2px solid var(--sky-light);
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--sky);
-    cursor: grab;
-    user-select: none;
-    transition: transform 0.15s, box-shadow 0.15s;
-  }
+  .drag-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+  .drag-chips-pool { background: var(--sky-pale); border: 2px dashed var(--sky-light); border-radius: 14px; padding: 14px; min-height: 80px; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start; }
+  .drag-chip { background: white; border: 2px solid var(--sky-light); border-radius: 20px; padding: 6px 14px; font-size: 0.85rem; font-weight: 700; color: var(--sky); cursor: grab; user-select: none; transition: transform 0.15s, box-shadow 0.15s; }
   .drag-chip:hover { transform: scale(1.06); box-shadow: 0 4px 12px rgba(26,111,181,0.2); }
   .drag-chip.dragging { opacity: 0.4; }
-
   .drag-targets { display: flex; flex-direction: column; gap: 10px; }
   .drag-row { display: flex; align-items: center; gap: 10px; }
-  .drag-label {
-    background: var(--sky);
-    color: white;
-    border-radius: 10px;
-    padding: 7px 14px;
-    font-size: 0.85rem;
-    font-weight: 800;
-    min-width: 130px;
-    text-align: center;
-  }
+  .drag-label { background: var(--sky); color: white; border-radius: 10px; padding: 7px 14px; font-size: 0.85rem; font-weight: 800; min-width: 130px; text-align: center; }
   .drag-label.orange { background: var(--sun); }
-  .drag-zone {
-    flex: 1;
-    border: 2px dashed var(--border);
-    border-radius: 10px;
-    padding: 8px 12px;
-    min-height: 42px;
-    background: var(--cloud);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    transition: background 0.2s, border-color 0.2s;
-  }
+  .drag-zone { flex: 1; border: 2px dashed var(--border); border-radius: 10px; padding: 8px 12px; min-height: 42px; background: var(--cloud); display: flex; flex-wrap: wrap; gap: 6px; transition: background 0.2s, border-color 0.2s; }
   .drag-zone.drag-over { background: #e8f4ff; border-color: var(--sky); }
   .drag-zone .drag-chip { cursor: default; font-size: 0.8rem; }
   .drag-zone.correct-zone { border-color: var(--green); background: #d4f5e0; }
-  .drag-zone.wrong-zone   { border-color: var(--red);   background: #fde8e6; }
+  .drag-zone.wrong-zone { border-color: var(--red); background: #fde8e6; }
 
-  /* ---- MATCH ---- */
-  .match-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-  }
+  .match-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .match-col { display: flex; flex-direction: column; gap: 8px; }
-  .match-col h4 {
-    font-size: 0.8rem; font-weight: 800; text-transform: uppercase;
-    letter-spacing: 1px; color: var(--sky); margin-bottom: 4px;
-  }
-  .match-item {
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 14px;
-    font-size: 0.88rem;
-    font-weight: 600;
-    background: var(--cloud);
-    cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
-  }
+  .match-col h4 { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--sky); margin-bottom: 4px; }
+  .match-item { border: 2px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 0.88rem; font-weight: 600; background: var(--cloud); cursor: pointer; transition: all 0.2s; position: relative; }
   .match-item:hover { border-color: var(--sky-light); background: var(--sky-pale); }
   .match-item.selected { border-color: var(--sky); background: var(--sky-pale); }
   .match-item.matched-ok { border-color: var(--green); background: #d4f5e0; cursor: default; color: var(--green); }
   .match-item.matched-err { border-color: var(--red); background: #fde8e6; cursor: default; color: var(--red); animation: shake 0.3s; }
   .match-item .emoji { margin-right: 6px; }
-  @keyframes shake {
-    0%,100%{transform:translateX(0)}
-    25%{transform:translateX(-6px)}
-    75%{transform:translateX(6px)}
-  }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
 
-  /* ---- BUTTONS ---- */
   .btn-row { display: flex; gap: 12px; margin-top: 22px; justify-content: flex-end; }
-  .btn {
-    padding: 11px 28px;
-    border-radius: 30px;
-    border: none;
-    font-family: 'Nunito', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 800;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.5px;
-  }
-  .btn-check {
-    background: var(--sky);
-    color: white;
-    box-shadow: 0 4px 15px rgba(26,111,181,0.35);
-  }
+  .btn { padding: 11px 28px; border-radius: 30px; border: none; font-family: 'Nunito', sans-serif; font-size: 0.95rem; font-weight: 800; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px; }
+  .btn-check { background: var(--sky); color: white; box-shadow: 0 4px 15px rgba(26,111,181,0.35); }
   .btn-check:hover { background: #1460a0; transform: translateY(-2px); }
-  .btn-next {
-    background: var(--sun);
-    color: white;
-    box-shadow: 0 4px 15px rgba(245,166,35,0.4);
-  }
+  .btn-next { background: var(--sun); color: white; box-shadow: 0 4px 15px rgba(245,166,35,0.4); }
   .btn-next:hover { background: #e0941a; transform: translateY(-2px); }
   .btn:disabled { opacity: 0.5; cursor: default; transform: none !important; }
 
-  /* ---- FEEDBACK ---- */
-  .feedback {
-    margin-top: 14px;
-    padding: 10px 16px;
-    border-radius: 10px;
-    font-size: 0.88rem;
-    font-weight: 700;
-    display: none;
-    line-height: 1.5;
-  }
+  .feedback { margin-top: 14px; padding: 10px 16px; border-radius: 10px; font-size: 0.88rem; font-weight: 700; display: none; line-height: 1.5; }
   .feedback.show { display: block; }
-  .feedback.ok  { background: #d4f5e0; color: var(--green); border: 1.5px solid var(--green); }
-  .feedback.err { background: #fde8e6; color: var(--red);   border: 1.5px solid var(--red); }
+  .feedback.ok { background: #d4f5e0; color: var(--green); border: 1.5px solid var(--green); }
+  .feedback.err { background: #fde8e6; color: var(--red); border: 1.5px solid var(--red); }
 
-  /* ---- SCORE ---- */
-  #score-screen {
-    text-align: center;
-    padding: 40px 20px;
-    display: none;
-  }
+  #score-screen { text-align: center; padding: 40px 20px; display: none; }
   #score-screen.active { display: block; animation: fadeSlide 0.5s ease; }
-  .score-circle {
-    width: 150px; height: 150px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--sky), var(--sky-light));
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    margin: 0 auto 24px;
-    box-shadow: 0 10px 40px rgba(26,111,181,0.35);
-    color: white;
-  }
+  .score-circle { width: 150px; height: 150px; border-radius: 50%; background: linear-gradient(135deg, var(--sky), var(--sky-light)); display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 10px 40px rgba(26,111,181,0.35); color: white; }
   .score-circle .big { font-size: 3rem; font-weight: 900; font-family: 'Raleway', sans-serif; line-height: 1; }
   .score-circle .small { font-size: 0.85rem; opacity: 0.85; }
   #score-screen h2 { font-family: 'Raleway', sans-serif; font-size: 1.8rem; font-weight: 900; color: var(--sky); margin-bottom: 10px; }
-  #score-screen p  { color: var(--gray); font-size: 1rem; margin-bottom: 24px; }
-  .score-breakdown {
-    background: var(--cloud);
-    border-radius: 16px;
-    padding: 20px;
-    margin: 0 auto 24px;
-    max-width: 500px;
-    border: 2px solid var(--border);
-    text-align: left;
-  }
+  #score-screen p { color: var(--gray); font-size: 1rem; margin-bottom: 24px; }
+  .score-breakdown { background: var(--cloud); border-radius: 16px; padding: 20px; margin: 0 auto 24px; max-width: 500px; border: 2px solid var(--border); text-align: left; }
   .score-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
   .score-row:last-child { border-bottom: none; }
   .score-row .pts { font-weight: 800; color: var(--sky); }
-  .btn-restart {
-    background: linear-gradient(135deg, var(--sky), var(--sky-light));
-    color: white; border: none; padding: 14px 36px;
-    border-radius: 30px; font-family: 'Nunito', sans-serif;
-    font-size: 1rem; font-weight: 800; cursor: pointer;
-    box-shadow: 0 6px 20px rgba(26,111,181,0.3);
-    transition: transform 0.2s;
-  }
+  .btn-restart { background: linear-gradient(135deg, var(--sky), var(--sky-light)); color: white; border: none; padding: 14px 36px; border-radius: 30px; font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 800; cursor: pointer; box-shadow: 0 6px 20px rgba(26,111,181,0.3); transition: transform 0.2s; }
   .btn-restart:hover { transform: scale(1.05); }
 
-  /* ---- LATITUDE MAP VISUAL ---- */
-  .lat-visual {
-    background: linear-gradient(to right, #e8f4ff, #ddf0ff);
-    border: 2px solid var(--border);
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 20px;
-    font-size: 0.82rem;
-    color: var(--gray);
-  }
-  .lat-visual .lat-title {
-    font-weight: 800; color: var(--sky); font-size: 0.85rem;
-    margin-bottom: 10px; text-align: center;
-  }
-  .lat-bar {
-    display: flex;
-    align-items: stretch;
-    border-radius: 8px;
-    overflow: hidden;
-    height: 36px;
-    border: 1.5px solid var(--border);
-    margin-bottom: 6px;
-  }
-  .lat-seg {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: white;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-    flex: 1;
-  }
-  .lat-seg.polar    { background: #6bb8e8; }
-  .lat-seg.subpolar { background: #3a9ad4; }
-  .lat-seg.temperate{ background: #27ae60; }
-  .lat-seg.subtrop  { background: #f5a623; }
-  .lat-seg.equat    { background: #e74c3c; }
-  .lat-seg.subtrop2 { background: #f5a623; }
-  .lat-seg.temperate2{background: #27ae60; }
-  .lat-seg.subpolar2{ background: #3a9ad4; }
-  .lat-seg.polar2   { background: #6bb8e8; }
-  .lat-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.7rem;
-    color: var(--gray);
-    padding: 0 2px;
-  }
+  .lat-visual { background: linear-gradient(to right, #e8f4ff, #ddf0ff); border: 2px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 20px; font-size: 0.82rem; color: var(--gray); }
+  .lat-visual .lat-title { font-weight: 800; color: var(--sky); font-size: 0.85rem; margin-bottom: 10px; text-align: center; }
+  .lat-bar { display: flex; align-items: stretch; border-radius: 8px; overflow: hidden; height: 36px; border: 1.5px solid var(--border); margin-bottom: 6px; }
+  .lat-seg { display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 800; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.3); flex: 1; }
+  .lat-seg.polar { background: #6bb8e8; } .lat-seg.subpolar { background: #3a9ad4; } .lat-seg.temperate{ background: #27ae60; } .lat-seg.subtrop { background: #f5a623; } .lat-seg.equat { background: #e74c3c; } .lat-seg.subtrop2 { background: #f5a623; } .lat-seg.temperate2{background: #27ae60; } .lat-seg.subpolar2{ background: #3a9ad4; } .lat-seg.polar2 { background: #6bb8e8; }
+  .lat-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--gray); padding: 0 2px; }
 
-  @media (max-width: 580px) {
-    .mc-grid { grid-template-columns: 1fr; }
-    .drag-layout, .match-layout { grid-template-columns: 1fr; }
-    header::after { display: none; }
-    header h1 { font-size: 1.3rem; }
-    .timer-bar { display: none; }
-  }
+  @media (max-width: 580px) { .mc-grid { grid-template-columns: 1fr; } .drag-layout, .match-layout { grid-template-columns: 1fr; } header::after { display: none; } header h1 { font-size: 1.3rem; } .timer-bar { display: none; } }
 </style>
 </head>
 <body>
@@ -497,7 +130,7 @@
 <header>
   <div class="icon">🌤️</div>
   <div>
-    <h1>Exercício Final — Clima</h1>
+    <h1>Temperatura e Precipitação</h1>
     <p>Francisco Cavaco · Slides, Vídeo e Exercícios</p>
   </div>
   <div class="timer-bar">
@@ -518,12 +151,11 @@
             <img id="s6" src="Diapositivo6.JPG">
             <img id="s7" src="Diapositivo7.JPG">
             <img id="s8" src="Diapositivo8.JPG">
-            <img id="s9" src="Diapositivo9.jpg">
-        </div>
+            <img id="s9" src="Diapositivo9.jpg"> </div>
         <div style="display:flex; justify-content:center; gap:20px; align-items:center;">
-            <button class="btn-nav" id="btnPrevSlide" onclick="moveSlide(-1)" disabled>❮ Voltar</button>
+            <button class="btn-nav-media" id="btnPrevSlide" onclick="moveSlide(-1)" disabled>❮ Voltar</button>
             <span id="slideIndicator" style="font-weight:800; color:var(--sky);">Slide 1 / 9</span>
-            <button class="btn-nav" id="btnNextSlide" onclick="moveSlide(1)">Avançar ❯</button>
+            <button class="btn-nav-media" id="btnNextSlide" onclick="moveSlide(1)">Avançar ❯</button>
         </div>
     </div>
 </section>
@@ -805,11 +437,11 @@
       </div>
       <div class="match-col">
         <h4>🌧️ Regime de Precipitação</h4>
-        <div class="match-item" id="dl-polar" onclick="selectMatch(this,'def','polar','match2')">Precipitação muito escassa e sob forma de neve; ar muito frio e seco com pouco vapor de água disponível.</div>
-        <div class="match-item" id="dl-equatorial" onclick="selectMatch(this,'def','equatorial','match2')">Precipitação muito elevada (>2000 mm/ano); chuvas convectivas diárias provocadas pela intensa radiação solar e pela ZCIT.</div>
-        <div class="match-item" id="dl-temperada" onclick="selectMatch(this,'def','temperada','match2')">Precipitação regular ao longo do ano, associada à passagem de frentes frias e à atividade ciclónica das latitudes médias.</div>
-        <div class="match-item" id="dl-subtropical" onclick="selectMatch(this,'def','subtropical','match2')">Precipitação escassa; domínio de anticiclones com subsidência do ar que inibe a condensação — zona dos grandes desertos.</div>
-        <div class="match-item" id="dl-subpolar" onclick="selectMatch(this,'def','subpolar','match2')">Precipitação moderada a baixa; clima frio com neve frequente, precipitação concentrada no verão austral/boreal.</div>
+        <div class="match-item" id="dl-polar" onclick="selectMatch(this,'def','polar','match2')">Precipitação escassa e sob forma de neve; ar muito frio e seco com pouco vapor de água.</div>
+        <div class="match-item" id="dl-equatorial" onclick="selectMatch(this,'def','equatorial','match2')">Precipitação elevada; chuvas convectivas provocadas pela intensa radiação e pela ZCIT.</div>
+        <div class="match-item" id="dl-temperada" onclick="selectMatch(this,'def','temperada','match2')">Precipitação regular, associada à passagem de frentes frias e ciclones.</div>
+        <div class="match-item" id="dl-subtropical" onclick="selectMatch(this,'def','subtropical','match2')">Precipitação escassa; domínio de anticiclones com subsidência do ar — grandes desertos.</div>
+        <div class="match-item" id="dl-subpolar" onclick="selectMatch(this,'def','subpolar','match2')">Precipitação moderada a baixa; clima frio, neve frequente no verão.</div>
       </div>
     </div>
 
@@ -834,9 +466,8 @@
       <div class="score-row"><span>Escolha Múltipla — Precipitação (5×2)</span><span class="pts" id="sc5">0 / 10</span></div>
       <div class="score-row"><span>Correspondência — Latitude (5×2)</span><span class="pts" id="sc6">0 / 10</span></div>
     </div>
-    <button class="btn-restart" onclick="restart()">🔄 Tentar novamente</button>
+    <button class="btn-restart" onclick="location.reload()">🔄 Tentar novamente</button>
   </div>
-
 </main>
 
 <script>
@@ -848,16 +479,212 @@ function moveSlide(n) {
     document.getElementById('s' + currentSlide).classList.remove('active');
     currentSlide += n;
     document.getElementById('s' + currentSlide).classList.add('active');
-    
     document.getElementById('slideIndicator').innerText = "Slide " + currentSlide + " / " + totalSlides;
     document.getElementById('btnPrevSlide').disabled = (currentSlide === 1);
     document.getElementById('btnNextSlide').disabled = (currentSlide === totalSlides);
 }
 
-// ========== LÓGICA DO TEU EXERCÍCIO ORIGINAL (RECUPERADA) ==========
+// ========== LÓGICA DO EXERCÍCIO ORIGINAL (RESTURADA) ==========
 let scores = { mc: 0, fill: 0, drag: 0, match1: 0, pmc: 0, match2: 0 };
 let mcDone = [false, false, false];
 let pmcDone = [false, false, false, false, false];
 let fillDone = false;
 let dragDone = false;
-let match1
+let match1Pairs = 0;
+let match2Pairs = 0;
+let pendingTerms = { match1: null, match2: null };
+let pendingDefs  = { match1: null, match2: null };
+let timerInterval = null;
+let seconds = 20 * 60;
+
+const mcAnswers  = { mc1: 'b', mc2: 'c', mc3: 'd' };
+const pmcAnswers = { pmc1: 'b', pmc2: 'b', pmc3: 'b', pmc4: 'c', pmc5: 'c' };
+
+const dragCorrect = {
+  variavel: 'tempo', horas: 'tempo', previsao: 'tempo',
+  padroes: 'clima', '30anos': 'clima', estavel: 'clima'
+};
+
+function startTimer() {
+  timerInterval = setInterval(() => {
+    seconds--;
+    if (seconds < 0) { clearInterval(timerInterval); document.getElementById('timer').textContent = '⏰'; return; }
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    document.getElementById('timer').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }, 1000);
+}
+startTimer();
+
+function goTo(n) {
+  document.querySelectorAll('.section-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('sec-' + n).classList.add('active');
+  for (let i = 0; i < 6; i++) {
+    const d = document.getElementById('dot-' + i);
+    if (i < n) { d.classList.add('done'); d.classList.remove('active'); }
+    else if (i === n) { d.classList.add('active'); d.classList.remove('done'); }
+    else { d.classList.remove('done', 'active'); }
+  }
+  document.getElementById('prog-label').textContent = (n + 1) + ' / 6';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function checkMC(btn, group, val) {
+  const answers = group.startsWith('pmc') ? pmcAnswers : mcAnswers;
+  const doneArr = group.startsWith('pmc') ? pmcDone : mcDone;
+  const idxMap  = group.startsWith('pmc') ? { pmc1:0, pmc2:1, pmc3:2, pmc4:3, pmc5:4 } : { mc1:0, mc2:1, mc3:2 };
+  const idx = idxMap[group];
+  if (doneArr[idx]) return;
+  doneArr[idx] = true;
+  const correct = answers[group];
+  const btns = document.querySelectorAll(`#${group} .mc-btn`);
+  btns.forEach(b => b.disabled = true);
+  if (val === correct) {
+    btn.classList.add('correct');
+    if (group.startsWith('pmc')) scores.pmc += 2; else scores.mc += 2;
+  } else {
+    btn.classList.add('wrong');
+    btns.forEach(b => { if (b.textContent.trim().startsWith(correct)) b.classList.add('correct'); });
+  }
+}
+
+function checkSec0() {
+  ['mc1','mc2','mc3'].forEach((g, i) => {
+    if (!mcDone[i]) {
+      const btns = document.querySelectorAll(`#${g} .mc-btn`);
+      btns.forEach(b => b.disabled = true);
+      btns.forEach(b => { if (b.textContent.trim().startsWith(mcAnswers[g])) b.classList.add('correct'); });
+      mcDone[i] = true;
+    }
+  });
+  document.getElementById('next-0').disabled = false;
+  const fb = document.getElementById('fb-mc');
+  fb.className = 'feedback show ' + (scores.mc >= 4 ? 'ok' : 'err');
+  fb.innerHTML = scores.mc >= 4 ? `✅ Muito bem! Obtiveste <strong>${scores.mc}/6</strong> pontos.` : `ℹ️ Obtiveste <strong>${scores.mc}/6</strong> pontos.`;
+}
+
+const fillAnswers = [
+  { id: 'f1', accept: ['termómetro','termometro'], display: 'Termómetro' },
+  { id: 'f2', accept: ['nefoscópio','nefoscopio','observação direta','observacao direta'], display: 'Nefoscópio' },
+  { id: 'f3', accept: ['insolação','insolacao'], display: 'Insolação' },
+  { id: 'f4', accept: ['anemómetro','anemometro','catavento'], display: 'Anemómetro' },
+  { id: 'f5', accept: ['30'], display: '30' }
+];
+
+function checkSec1() {
+  if (fillDone) { document.getElementById('next-1').disabled = false; return; }
+  fillDone = true;
+  let correct = 0;
+  fillAnswers.forEach(({ id, accept, display }) => {
+    const input = document.getElementById(id);
+    const val = input.value.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const accepted = accept.map(a => a.normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
+    if (accepted.includes(val)) { input.classList.add('correct-fill'); correct++; }
+    else { input.classList.add('wrong-fill'); input.value = '✗ ' + display; }
+    input.disabled = true;
+  });
+  scores.fill = correct * 2;
+  const fb = document.getElementById('fb-fill');
+  fb.className = 'feedback show ' + (correct >= 3 ? 'ok' : 'err');
+  fb.innerHTML = correct >= 3 ? `✅ Excelente! Acertaste <strong>${correct}/5</strong>.` : `ℹ️ Acertaste <strong>${correct}/5</strong>.`;
+  document.getElementById('next-1').disabled = false;
+}
+
+let dragged = null;
+function dragStart(e) { dragged = e.target; e.target.classList.add('dragging'); e.dataTransfer.setData('text/plain', e.target.dataset.val); }
+function dragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function dropTo(e, zone) {
+  e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+  if (!dragged) return; dragged.classList.remove('dragging');
+  const chip = dragged.cloneNode(true); chip.removeAttribute('draggable'); chip.removeAttribute('ondragstart'); chip.style.cursor = 'default';
+  e.currentTarget.appendChild(chip); dragged.remove(); dragged = null;
+}
+
+function checkSec2() {
+  if (dragDone) { document.getElementById('next-2').disabled = false; return; }
+  dragDone = true;
+  let correct = 0;
+  const zones = { tempo: document.getElementById('zone-tempo'), clima: document.getElementById('zone-clima') };
+  const all = {};
+  ['tempo','clima'].forEach(z => { zones[z].querySelectorAll('.drag-chip').forEach(chip => { all[chip.dataset.val] = z; }); });
+  Object.entries(all).forEach(([val, zone]) => { if (dragCorrect[val] === zone) correct++; });
+  let tempoOk = true, climaOk = true;
+  zones.tempo.querySelectorAll('.drag-chip').forEach(chip => { if (dragCorrect[chip.dataset.val] !== 'tempo') tempoOk = false; });
+  zones.clima.querySelectorAll('.drag-chip').forEach(chip => { if (dragCorrect[chip.dataset.val] !== 'clima') climaOk = false; });
+  zones.tempo.classList.add(tempoOk && zones.tempo.children.length >= 2 ? 'correct-zone' : 'wrong-zone');
+  zones.clima.classList.add(climaOk && zones.clima.children.length >= 2 ? 'correct-zone' : 'wrong-zone');
+  scores.drag = Math.min(correct, 6);
+  const fb = document.getElementById('fb-drag');
+  fb.className = 'feedback show ' + (correct >= 4 ? 'ok' : 'err');
+  fb.innerHTML = `✅ Classificados: <strong>${correct}/6</strong>.`;
+  document.getElementById('next-2').disabled = false;
+}
+
+function selectMatch(el, side, key, matchId) {
+  if (el.classList.contains('matched-ok') || el.classList.contains('matched-err')) return;
+  if (side === 'term') {
+    if (pendingTerms[matchId]) pendingTerms[matchId].classList.remove('selected');
+    pendingTerms[matchId] = el; el.classList.add('selected'); el._key = key;
+  } else {
+    if (pendingDefs[matchId]) pendingDefs[matchId].classList.remove('selected');
+    pendingDefs[matchId] = el; el.classList.add('selected'); el._key = key;
+  }
+  if (pendingTerms[matchId] && pendingDefs[matchId]) {
+    const tk = pendingTerms[matchId]._key, dk = pendingDefs[matchId]._key;
+    const pt = pendingTerms[matchId], pd = pendingDefs[matchId];
+    if (tk === dk) {
+      pt.classList.remove('selected'); pt.classList.add('matched-ok'); pd.classList.remove('selected'); pd.classList.add('matched-ok');
+      if (matchId === 'match1') { scores.match1 += 2; match1Pairs++; if (match1Pairs === 5) { document.getElementById('fb-match1').className = 'feedback show ok'; document.getElementById('fb-match1').innerHTML = `🎉 Parabéns!`; } }
+      if (matchId === 'match2') { scores.match2 += 2; match2Pairs++; if (match2Pairs === 5) { document.getElementById('fb-match2').className = 'feedback show ok'; document.getElementById('fb-match2').innerHTML = `🎉 Parabéns!`; } }
+    } else {
+      pt.classList.remove('selected'); pt.classList.add('matched-err'); pd.classList.remove('selected'); pd.classList.add('matched-err');
+      setTimeout(() => { pt.classList.remove('matched-err'); pd.classList.remove('matched-err'); }, 800);
+    }
+    pendingTerms[matchId] = null; pendingDefs[matchId] = null;
+  }
+}
+
+function checkSec4() {
+  ['pmc1','pmc2','pmc3','pmc4','pmc5'].forEach((g, i) => {
+    if (!pmcDone[i]) {
+      const btns = document.querySelectorAll(`#${g} .mc-btn`);
+      btns.forEach(b => b.disabled = true);
+      btns.forEach(b => { if (b.textContent.trim().startsWith(pmcAnswers[g])) b.classList.add('correct'); });
+      pmcDone[i] = true;
+    }
+  });
+  document.getElementById('next-4').disabled = false;
+  const fb = document.getElementById('fb-pmc');
+  fb.className = 'feedback show ' + (scores.pmc >= 6 ? 'ok' : 'err');
+  fb.innerHTML = `✅ Obtiveste <strong>${scores.pmc}/10</strong> pontos.`;
+}
+
+function showScore() {
+  clearInterval(timerInterval);
+  document.querySelectorAll('.section-card').forEach(c => c.classList.remove('active'));
+  for (let i = 0; i < 6; i++) { const d = document.getElementById('dot-' + i); d.classList.add('done'); d.classList.remove('active'); }
+  document.getElementById('prog-label').textContent = '✓ Completo';
+  const total = scores.mc + scores.fill + scores.drag + scores.match1 + scores.pmc + scores.match2;
+  document.getElementById('final-score').textContent = total;
+  document.getElementById('sc1').textContent = scores.mc + ' / 6';
+  document.getElementById('sc2').textContent = scores.fill + ' / 10';
+  document.getElementById('sc3').textContent = scores.drag + ' / 6';
+  document.getElementById('sc4').textContent = scores.match1 + ' / 10';
+  document.getElementById('sc5').textContent = scores.pmc + ' / 10';
+  document.getElementById('sc6').textContent = scores.match2 + ' / 10';
+  const pct = total / 56 * 100;
+  let title, msg;
+  if (pct >= 90) { title = '🏆 Excelente!'; msg = 'Dominaste os temas Clima e Precipitação na perfeição. Parabéns!'; }
+  else if (pct >= 70) { title = '👏 Muito Bom!'; msg = 'Boa prestação! Revê os pontos onde erraste.'; }
+  else if (pct >= 50) { title = '📚 Suficiente'; msg = 'Há margem para melhorar. Consulta novamente os slides.'; }
+  else { title = '💪 Continua a tentar!'; msg = 'Não desistas! Revê a matéria e tenta de novo.'; }
+  document.getElementById('score-title').textContent = title;
+  document.getElementById('score-msg').textContent = msg;
+  const screen = document.getElementById('score-screen');
+  screen.style.display = 'block'; screen.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
